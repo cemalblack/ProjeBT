@@ -1,21 +1,29 @@
-// Service Worker - Optimize edilmiş PWA
-const CACHE_NAME = 'butce-v3'; // Versiyon artırıldı
+// Service Worker - Güvenli ve Hızlı PWA
+const CACHE_NAME = 'butce-v4'; // Önbelleği sıfırlamak için v4 yapıldı
 const urlsToCache = [
   './',
-  'logo.png',
-  'manifest.json'
+  'index.html',
+  'manifest.json',
+  'logo.png'
 ];
 
-// Kurulum - hızlı aktivasyon
+// Kurulum - dosyalardan biri eksik olsa bile patlamayan güvenli kurulum
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Hemen aktif et
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(async cache => {
+      for (const url of urlsToCache) {
+        try {
+          await cache.add(url);
+        } catch (err) {
+          console.warn('Dosya önbelleğe alınamadı:', url);
+        }
+      }
+    })
   );
 });
 
-// Aktivasyon - eski cache'leri temizle
+// Aktivasyon - eski cache'leri anında sil
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -26,26 +34,29 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Hemen kontrol al
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch - Stale-while-revalidate stratejisi (hızlı + güncel)
+// Fetch - Önce ağdan en günceli dene, internet yoksa cache'den ver
 self.addEventListener('fetch', event => {
+  // Sadece GET isteklerini işle
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(event.request).then(cachedResponse => {
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-          // Arka planda cache'i güncelle
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        });
-        
-        // Cache varsa hemen döndür, yoksa network'ten bekle
-        return cachedResponse || fetchPromise;
-      });
-    })
+    fetch(event.request)
+      .then(networkResponse => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // Çevrimdışıysa önbellekten getir
+        return caches.match(event.request);
+      })
   );
 });
