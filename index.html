@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Bütçe">
 <meta name="theme-color" content="#7c6af7">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="./logo.png">
+<link rel="apple-touch-icon" href="./logo.png">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0f0;min-height:100vh;display:flex;flex-direction:column;}
@@ -1096,6 +1099,11 @@ window.addEventListener('DOMContentLoaded',function(){
   });
 });
 function temizleYetimKayitlar(){var gc=getKategoriler();var gg=getGelirKategoriler();var geçerli=gc.map(function(c){return c.id;}).concat(gg.map(function(c){return c.id;}));sd('bekleyen_taksitler',gd('bekleyen_taksitler',[]).filter(function(b){return geçerli.indexOf(b.kat)>=0;}));saveTekrarlar(getTekrarlar().filter(function(t){return geçerli.indexOf(t.katId)>=0;}));}
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(function() { console.log('PWA aktif!'); })
+    .catch(function(err) { console.warn('PWA hatası:', err); });
+}
 </script>
 </body>
 </html>
