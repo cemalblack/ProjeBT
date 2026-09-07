@@ -565,6 +565,27 @@ input[type="number"]:focus,input[type="month"]:focus{border-color:#7c6af7;}
 </div></div>
 
 <script>
+  var DRIVE_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzNkY2Q3TUJ3ZltFfHMPY_oRDhOZS5hDY9cN0cmpmnSlPmPJySWJFYgB_VlCBHqEi53/exec";
+var yedekZamanlayici = null;
+
+function driveYedekle() {
+  if(!DRIVE_WEBHOOK_URL || DRIVE_WEBHOOK_URL.indexOf("script.google.com") === -1) return;
+  fetch(DRIVE_WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify(_cache)
+  }).then(function(){ 
+    console.log("Drive'a yedeklendi."); 
+  }).catch(function(e){ 
+    console.warn("Drive yedekleme hatası:", e); 
+  });
+}
+
+function otomatikYedekle() {
+  if(yedekZamanlayici) clearTimeout(yedekZamanlayici);
+  yedekZamanlayici = setTimeout(driveYedekle, 3000);
+}
 var VARSAYILAN_KATEGORILER=[
   {id:'Gida',ad:'Gıda',altlar:[],taksitAcik:false,sira:1,buyuk:false,katTip:'harcama'},
   {id:'Esya',ad:'Eşya',altlar:[],taksitAcik:false,sira:2,buyuk:false,katTip:'harcama'},
@@ -594,7 +615,7 @@ var aktifBirikimId=null,harcamaListAcik=false,harcamaGosterilen=5;
 var aktifGelirAkisForBirikim=null,aktifGelirKatAyar=null;
 
 function gd(k,d){var v=_cache[k];return v!==undefined?JSON.parse(JSON.stringify(v)):d;}
-function sd(k,v){_cache[k]=JSON.parse(JSON.stringify(v));try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function sd(k,v){_cache[k]=JSON.parse(JSON.stringify(v));try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} otomatikYedekle();}
 function _loadFromLocalStorage(){try{for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);try{_cache[key]=JSON.parse(localStorage.getItem(key));}catch(e){}}}catch(e){}}
 function buAy(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function tarihStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
