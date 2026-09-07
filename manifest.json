@@ -1,13 +1,20 @@
 {
-  "name": "Bütçe",
+  "name": "SD Bütçe",
   "short_name": "Bütçe",
   "description": "Kişisel Finans Yönetim Uygulaması",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f1419",
   "theme_color": "#7c6af7",
   "orientation": "portrait",
   "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "logo.png",
       "sizes": "512x512",
