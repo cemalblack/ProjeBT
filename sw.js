@@ -1,5 +1,5 @@
 // Service Worker - Güvenli ve Hızlı PWA
-const CACHE_NAME = 'butce-v4'; // Önbelleği sıfırlamak için v4 yapıldı
+const CACHE_NAME = 'butce-v5'; // Önbelleği sıfırlamak için v5 yapıldı
 const urlsToCache = [
   './',
   'index.html',
