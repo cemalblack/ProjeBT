@@ -1300,7 +1300,7 @@ function acKatDetay(katId,ay){
   }
   document.getElementById('pop-kat-detay').classList.add('show');
 }
-
+document.getElementById('pop-kat-detay-kapat').addEventListener('click',function(){document.getElementById('pop-kat-detay').classList.remove('show');});
 function sifirla(){acOnay('Tüm Veriler Silinecek','Tüm verileriniz kalıcı olarak silinecek.',function(){_cache={};try{localStorage.clear();}catch(e){}renderGiris();renderVarlik();showPage('giris');});}
 function yedegiIndir(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(_cache,null,2)],{type:'application/json'}));a.download='butce_'+new Date().toISOString().slice(0,10)+'.json';a.click();}
 function yedegiYukle(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){try{var d=JSON.parse(ev.target.result);if(!confirm('Mevcut veriler silinip yedek yüklenecek. Devam edilsin mi?'))return;try{localStorage.clear();}catch(e){}_cache={};if(!d['kategoriler'])d['kategoriler']=JSON.parse(JSON.stringify(VARSAYILAN_KATEGORILER));Object.keys(d).forEach(function(k){_cache[k]=d[k];try{localStorage.setItem(k,JSON.stringify(d[k]));}catch(err){}});renderGiris();renderVarlik();renderKatTablo();renderGelirKatTablo();renderKatBtnlar();showPage('giris');showGecis('✅ Yedek yüklendi.');}catch(err){alert('Geçersiz dosya: '+err.message);}};r.readAsText(f);}
