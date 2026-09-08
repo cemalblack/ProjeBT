@@ -588,8 +588,7 @@ var aktifBirikimId=null,harcamaListAcik=false,harcamaGosterilen=5;
 var aktifGelirAkisForBirikim=null,aktifGelirKatAyar=null;
 
 function gd(k,d){var v=_cache[k];return v!==undefined?JSON.parse(JSON.stringify(v)):d;}
-function sd(k,v){_cache[k]=JSON.parse(JSON.stringify(v));try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-function _loadFromLocalStorage(){try{for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);try{_cache[key]=JSON.parse(localStorage.getItem(key));}catch(e){}}}catch(e){}}
+function sd(k,v){_cache[k]=JSON.parse(JSON.stringify(v));try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} tetikleOtomatikYedek();}function _loadFromLocalStorage(){try{for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);try{_cache[key]=JSON.parse(localStorage.getItem(key));}catch(e){}}}catch(e){}}
 function buAy(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function tarihStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function bugunStr(){return tarihStr(new Date());}
@@ -1331,6 +1330,36 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(function() { console.log('PWA aktif!'); })
     .catch(function(err) { console.warn('PWA hatası:', err); });
+}
+// ===== OTOMATİK YEDEKLEME SİSTEMİ (DEBOUNCE) =====
+var YEDEK_URL = "https://script.google.com/macros/s/AKfycbxLW-LxFYiwnffynk5iYs1XQ0TPLZMMPti0r2_3xhYkiAHKy06IJRoLknaSpd3ADWut/exec";
+var yedeklemeZamanlayici = null;
+
+function tetikleOtomatikYedek() {
+  // Eğer zaten bir geri sayım varsa iptal et
+  if (yedeklemeZamanlayici) clearTimeout(yedeklemeZamanlayici);
+  
+  // 3 saniye bekle, başka işlem yapılmazsa gönderimi başlat
+  yedeklemeZamanlayici = setTimeout(function() {
+    otomatikYedekleGonder();
+  }, 3000);
+}
+
+function otomatikYedekleGonder() {
+  if (Object.keys(_cache).length === 0) return; // Veri yoksa boşuna çalışma
+  
+  fetch(YEDEK_URL, {
+    method: 'POST',
+    mode: 'no-cors', // Google Apps Script CORS güvenlik engellerini aşmak için
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8' // Preflight (OPTIONS) engeline takılmamak için
+    },
+    body: JSON.stringify(_cache) // Tüm veriyi paketleyip yolla
+  }).then(function() {
+    console.log("Arka planda Drive'a başarıyla yedeklendi.");
+  }).catch(function(err) {
+    console.error("Yedekleme başarısız oldu:", err);
+  });
 }
 </script>
 </body>
