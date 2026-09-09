@@ -764,7 +764,14 @@ function renderGiris(){
     if(!t.aktif||t.baslangicAy>ayStr) return;
     if(!t.sinirsiz&&t.tamamlanan>=(t.tekrarSayisi||0)) return;
     var od=t.odemeler&&t.odemeler.some(function(o){return o.slice(0,7)===ayStr;});
-    if(!od&&t.tutarTipi==='sabit'&&t.tutar) tekT+=t.tutar;
+    if(!od&&t.tutarTipi==='sabit'&&t.tutar) {
+      var isKart = false;
+      if (t.borcHesapId) {
+        var hv = varliklar.find(function(x){return x.id === t.borcHesapId;});
+        if (hv && hv.tip === 'borc' && hv.borcTuru === 'kart') isKart = true;
+      }
+      if (!isKart) tekT += t.tutar;
+    }
   });
 
   // 2. Nakdi Taksitler (Karta bağlı olmayanlar)
