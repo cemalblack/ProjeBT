@@ -232,11 +232,11 @@ input[type="number"]:focus,input[type="month"]:focus{border-color:#7c6af7;}
 <div class="page active" id="page-giris">
   <div class="balance-card">
     <div class="balance-top"><div style="min-width:90px"></div>
-      <div class="balance-main"><div class="balance-label">KALAN</div><div class="balance-amount" id="kalan-tutar">0 TL</div></div>
+      <div class="balance-main"><div class="balance-label">HARCANABİLİR</div><div class="balance-amount" id="kalan-tutar">0 TL</div></div>
       <div style="min-width:90px"></div></div>
     <div class="balance-sub">
-      <div class="balance-sub-item"><div class="lbl" id="planlanan-lbl">Bekleyen Ödemeler</div><div class="val" id="planlanan-val" style="color:#f7a06a">0 TL</div></div>
-      <div class="balance-sub-item"><div class="lbl" id="sum-net-lbl">Nakit Para</div><div class="val" id="sum-net-val" style="color:#6af7a0">0 TL</div></div>
+      <div class="balance-sub-item"><div class="lbl" id="planlanan-lbl">BEKLEYEN ÇIKIŞLAR</div><div class="val" id="planlanan-val" style="color:#f7a06a">0 TL</div></div>
+      <div class="balance-sub-item"><div class="lbl" id="sum-net-lbl">KASA</div><div class="val" id="sum-net-val" style="color:#6af7a0">0 TL</div></div>
     </div>
   </div>
   <div class="asim-uyari" id="asim-uyari"></div>
@@ -811,13 +811,13 @@ function renderGiris(){
   el.className='balance-amount'+(displayKalan<0?' danger':'');
 
   var AY=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  document.getElementById('planlanan-lbl').textContent=AY[new Date().getMonth()]+' Bekleyen Ödemeler';
+  document.getElementById('planlanan-lbl').textContent=AY[new Date().getMonth()]+' BEKLEYEN ÇIKIŞLAR';
   document.getElementById('planlanan-val').textContent=hesaplaPlanlananOdemeler().toLocaleString('tr-TR')+' TL';
 
   var hl=hesaplaHazirLikit();
   var lbl=document.getElementById('sum-net-lbl');
   var val=document.getElementById('sum-net-val');
-  lbl.textContent=hl>=0?'Nakit Para':'Nakit Açık';
+  lbl.textContent=hl>=0?'KASA':'AÇIK KASA';
   val.textContent=fmt(Math.abs(hl));
   val.style.color=hl>=0?'#6af7a0':'#f76a6a';
 
