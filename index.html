@@ -861,6 +861,39 @@ function akisAdim_TaksitSayi(sev){document.getElementById('pop-akis-title').text
 function akisKaydet(taksitli,taksitSayisi){var tutar=akisState.tutar,katId=akisState.katId,altKat=akisState.altKat,hesapId=akisState.hesapId,not=akisState.not,ay=buAy();var og=gd('harcamalar',[]).filter(function(h){return h.ay===ay;}).reduce(function(s,h){return s+h.tutar;},0);var ok=getKatToplam(katId,ay);if(!taksitli){var hId=Date.now();var h=gd('harcamalar',[]);h.unshift({id:hId,tutar:tutar,not:not,kat:katId,altKat:altKat||null,tarih:new Date().toISOString(),ay:ay,hesapId:hesapId||null});sd('harcamalar',h);if(hesapId)hesapHarcamaEkle(hesapId,tutar,katId,altKat,not,hId);checkUyari(og,og+tutar,katId,ok,ok+tutar);isaretTekrarlayanOdendi(katId,altKat,ay);}else{kaydetTaksitliAkis(tutar,katId,altKat,hesapId,not,taksitSayisi);}tutarStr='';document.getElementById('not-input').value='';updateTutarDisplay();akisBasariGoster(tutar,katId,altKat,hesapId,taksitli?taksitSayisi:null,false);renderGiris();}
 function akisBasariGoster(tutar,katId,altKat,hesapId,ts,isOdeme){document.getElementById('pop-akis-title').textContent='';var ic=document.getElementById('pop-akis-icerik');ic.innerHTML='';var div=document.createElement('div');div.className='kayit-basari';div.innerHTML='<div style="font-size:48px;margin-bottom:8px">'+(isOdeme?'💳':'✅')+'</div><div style="font-size:15px;font-weight:700;color:'+(isOdeme?'#f7a06a':'#6af7a0')+';margin-bottom:4px">'+(isOdeme?'Ödeme Kaydedildi!':'Kaydedildi!')+'</div><div style="font-size:12px;color:#888">'+katAd(katId)+(altKat?' › '+altKat:'')+'<br>'+fmt(tutar)+(ts?' — '+ts+' taksit':'')+'</div>';if(hesapId){var ha=(gd('varliklar',[]).find(function(x){return x.id===hesapId;})||{}).ad;if(ha)div.innerHTML+='<div style="font-size:11px;color:#f7a06a;margin-top:4px">'+(isOdeme?ha+' borcundan düşüldü':ha+' hesabına işlendi')+'</div>';}ic.appendChild(div);document.getElementById('pop-akis').classList.add('show');setTimeout(function(){document.getElementById('pop-akis').classList.remove('show');},1500);}
 
+function hesapHarcamaEkle(hesapId, tutar, katId, altKat, not, harcamaId) {
+    var liste = gd('varliklar', []);
+    var v = liste.find(function(x) { return x.id === hesapId; });
+    if (!v) return;
+    
+    var tarih = new Date().toISOString();
+    
+    if (v.tip === 'borc') {
+        if (v.borcTuru === 'kart') {
+            v.notlar.push({
+                tip: 'harcama_ekle',
+                not: String(tutar),
+                tarih: tarih,
+                katId: katId,
+                altKat: altKat || null,
+                not2: not || '',
+                harcamaId: harcamaId || null
+            });
+        } else {
+            v.deger += tutar;
+            v.notlar.push({ tip: 'ekle', not: String(tutar), tarih: tarih });
+        }
+        sd('varliklar', liste);
+    } else {
+        v.deger -= tutar;
+        v.notlar.push({ tip: 'cikar', not: String(tutar), tarih: tarih });
+        sd('varliklar', liste);
+        yenidenHesapla(hesapId, tarih.slice(0, 10));
+        otomatikGecisKontrol();
+        return;
+    }
+    otomatikGecisKontrol();
+}
 function hesapHarcamaGeriAl(harcama){
   if(!harcama.hesapId)return;
   var liste=gd('varliklar',[]);
