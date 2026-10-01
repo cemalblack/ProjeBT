@@ -225,7 +225,7 @@ input[type="number"]:focus,input[type="month"]:focus{border-color:#7c6af7;}
     <div class="tab-main" onclick="showPage('gelirler')">GELİRLER</div>
     <div class="tab-main" onclick="showPage('varlik')">VARLIK-BORÇ</div>
   </div>
-  <div class="tab-ayar" onclick="showPage('ayarlar')">⚙️</div>
+  <div class="tab-ayar" onclick="showPage('ayarlar')">⚙️️</div>
 </div>
 <div class="gecis-bildirim" id="gecis-bildirim"></div>
 
@@ -233,7 +233,7 @@ input[type="number"]:focus,input[type="month"]:focus{border-color:#7c6af7;}
   <div class="balance-card">
     <div class="balance-top"><div style="min-width:90px"></div>
       <div class="balance-main"><div class="balance-label">HARCANABİLİR</div><div class="balance-amount" id="kalan-tutar">0 TL</div></div>
-      <div style="min-width:90px"></div></div>
+      <div style="min-width:90px;text-align:right;display:flex;flex-direction:column;justify-content:center;" id="viop-wrap"></div></div>
     <div class="balance-sub">
       <div class="balance-sub-item"><div class="lbl" id="planlanan-lbl">BEKLEYEN ÇIKIŞLAR</div><div class="val" id="planlanan-val" style="color:#f7a06a">0 TL</div></div>
       <div class="balance-sub-item"><div class="lbl" id="sum-net-lbl">KASA</div><div class="val" id="sum-net-val" style="color:#6af7a0">0 TL</div></div>
@@ -450,7 +450,7 @@ input[type="number"]:focus,input[type="month"]:focus{border-color:#7c6af7;}
 <div class="popup-overlay" id="pop-kat-ayar-sec"><div class="popup"><div class="popup-title" id="pop-kat-ayar-sec-title"></div>
   <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
     <button id="pop-kat-alt-btn" style="background:#1e2a3f;border:1.5px solid #3a3a7a;border-radius:10px;color:#7c6af7;padding:14px;font-size:13px;font-weight:700;cursor:pointer;text-align:left">📂 Alt Kategoriler</button>
-    <button id="pop-kat-ozellik-btn" style="background:#2a1e10;border:1.5px solid #6a4a1a;border-radius:10px;color:#f7b96a;padding:14px;font-size:13px;font-weight:700;cursor:pointer;text-align:left">⚙️ Özellik</button>
+    <button id="pop-kat-ozellik-btn" style="background:#2a1e10;border:1.5px solid #6a4a1a;border-radius:10px;color:#f7b96a;padding:14px;font-size:13px;font-weight:700;cursor:pointer;text-align:left">⚙ Özellik</button>
   </div>
   <div class="popup-btns"><button class="ptn-iptal" id="pop-kat-ayar-sec-kapat">Kapat</button></div>
 </div></div>
@@ -1099,15 +1099,25 @@ function renderGiris(){
   el.className='balance-amount'+(displayKalan<0?' danger':'');
 
   var AY=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  document.getElementById('planlanan-lbl').textContent=AY[new Date().getMonth()]+' BEKLEYEN ÖDEMELER';
-  document.getElementById('planlanan-val').textContent=fmt(genelT_kalan_full);
+  document.getElementById('planlanan-lbl').textContent=AY[new Date().getMonth()]+' KALAN ÇIKIŞLAR';
+  document.getElementById('planlanan-val').textContent=Math.round(genelT_kalan_full / 1000) + ' Bin TL';
 
   var hl=(typeof hesaplaHazirLikit === 'function') ? hesaplaHazirLikit() : 0;
   var lbl=document.getElementById('sum-net-lbl');
   var val=document.getElementById('sum-net-val');
   lbl.textContent=hl>=0?'KASA':'AÇIK KASA';
-  val.textContent=fmt(Math.abs(hl));
+  val.textContent=Math.round(Math.abs(hl) / 1000) + ' Bin TL';
   val.style.color=hl>=0?'#6af7a0':'#f76a6a';
+
+  var viopHesap=varliklar.find(function(v){return v.ad.toLowerCase()==='viop'||v.ad.toLowerCase()==='vi̇op';});
+  var vw=document.getElementById('viop-wrap');
+  if(vw){
+    if(viopHesap){
+      vw.innerHTML='<div style="font-size:11px;color:#aaa;font-weight:700;margin-bottom:2px">VİOP</div><div style="font-size:14px;font-weight:700;color:#c0b8ff">'+Math.round(viopHesap.deger/1000)+' Bin TL</div>';
+    }else{
+      vw.innerHTML='';
+    }
+  }
 
   var btn=document.getElementById('harcama-toggle-btn');
   var list=document.getElementById('harcama-list');
@@ -1167,10 +1177,6 @@ function renderGiris(){
   });
   dw.style.display=harcamalar.length>harcamaGosterilen&&harcamaGosterilen<60?'block':'none';
 }
-
-/* ========================================================================= */
-/* 1. BÖLÜM BURADA BİTİYOR (DEVAM YAZDIĞINIZDA 2. BÖLÜM BURADAN EKLENECEK)   */
-/* ========================================================================= */
 
 /* ========================================================================= */
 /* 1. BÖLÜM BURADA BİTİYOR (DEVAM YAZDIĞINIZDA 2. BÖLÜM BURADAN EKLENECEK)   */
@@ -1722,7 +1728,7 @@ borclar.forEach(function(v){var faiz=cariGFaiz(v);var fo=(v.kendiFaizOrani!==und
     var okHtml = '<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;font-size:14px;font-weight:700;color:#c0b8ff;"><button class="planlanan-ok-btn" onclick="ayDegistirRapor(-1, \'planlanan\')">⬅</button><span>📅 '+AY[m]+' '+y+'</span><button class="planlanan-ok-btn" onclick="ayDegistirRapor(1, \'planlanan\')">➡</button></div>';
     var html = okHtml;
 
-    html+='<div style="background:#2a2a4a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:center;border:1px solid #3a3a6a;"><div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">BEKLEYEN / TOPLAM YÜK</div><div style="font-size:22px;font-weight:700;color:#f76a6a;">'+fmt(genelT_kalan)+' / '+fmt(genelT_toplam)+'</div></div>';
+    html+='<div style="background:#2a2a4a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:center;border:1px solid #3a3a6a;"><div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">Kalan ÇIKIŞLAR / TOPLAM AYLIK ÇIKIŞ</div><div style="font-size:22px;font-weight:700;color:#f76a6a;">'+fmt(genelT_kalan)+' / '+fmt(genelT_toplam)+'</div></div>';
 
     var col1Html='',col2Html='',col3Html='';
 
@@ -1781,7 +1787,7 @@ borclar.forEach(function(v){var faiz=cariGFaiz(v);var fo=(v.kendiFaizOrani!==und
 }
 }
 
-function renderSorgu(){window.raporAyStr=null;if(aktifRaporBolum)renderSorguIcerik(aktifRaporBolum);}/* ========================================================================= */
+function renderSorgu(){window.raporAyStr=null;if(aktifRaporBolum)renderSorguIcerik(aktifRaporBolum);}
 
 /* 2. BÖLÜM BURADA BİTİYOR (DEVAM YAZDIĞINIZDA 3. BÖLÜM BURADAN EKLENECEK)   */
 /* ========================================================================= */
