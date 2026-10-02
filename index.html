@@ -225,7 +225,7 @@ input[type="number"]:focus,input[type="month"]:focus{border-color:#7c6af7;}
     <div class="tab-main" onclick="showPage('gelirler')">GELİRLER</div>
     <div class="tab-main" onclick="showPage('varlik')">VARLIK-BORÇ</div>
   </div>
-  <div class="tab-ayar" onclick="showPage('ayarlar')">⚙️️</div>
+  <div class="tab-ayar" onclick="showPage('ayarlar')">⚙</div>
 </div>
 <div class="gecis-bildirim" id="gecis-bildirim"></div>
 
@@ -274,7 +274,7 @@ input[type="number"]:focus,input[type="month"]:focus{border-color:#7c6af7;}
     <div style="margin-bottom:12px; display:none;"><input type="month" id="sorgu-ay"></div>
     <div class="rapor-btn-row">
       <button class="rapor-toggle-btn" id="btn-harcamalar" onclick="raporToggle('harcamalar')">Harcamalar</button>
-      <button class="rapor-toggle-btn" id="btn-planlanan" onclick="raporToggle('planlanan')">Bekleyen Ödemeler</button>
+      <button class="rapor-toggle-btn" id="btn-planlanan" onclick="raporToggle('planlanan')">Nakit Akışı</button>
       <button class="rapor-toggle-btn" id="btn-kartlar" onclick="raporToggle('kartlar')">Kredi Kartları</button>
       <button class="rapor-toggle-btn" id="btn-acik" onclick="raporToggle('acik')">Açık Hesaplar</button>
     </div>
@@ -1099,7 +1099,7 @@ function renderGiris(){
   el.className='balance-amount'+(displayKalan<0?' danger':'');
 
   var AY=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  document.getElementById('planlanan-lbl').textContent=AY[new Date().getMonth()]+' KALAN ÇIKIŞLAR';
+  document.getElementById('planlanan-lbl').textContent='ÇIKACAK NAKİT';
   document.getElementById('planlanan-val').textContent=Math.round(genelT_kalan_full / 1000) + ' Bin TL';
 
   var hl=(typeof hesaplaHazirLikit === 'function') ? hesaplaHazirLikit() : 0;
@@ -1594,13 +1594,12 @@ if(bolum==='harcamalar'){
     var harcamalar=gd('harcamalar',[]).filter(function(h){return h.ay===ay;});var cats=getKategoriler();var limler=getKatLimler();
     var anaTopH={},anaTopO={},topH=0,topO=0;
     harcamalar.forEach(function(h){var cat=cats.find(function(c){return c.id===h.kat;});var isO=(cat&&cat.katTip==='odeme')||h.isOdeme;if(isO){if(!anaTopO[h.kat])anaTopO[h.kat]=0;anaTopO[h.kat]+=h.tutar;topO+=h.tutar;}else{if(!anaTopH[h.kat])anaTopH[h.kat]=0;anaTopH[h.kat]+=h.tutar;topH+=h.tutar;}});
-    var maxH=Math.max.apply(null,Object.keys(anaTopH).map(function(k){return anaTopH[k];}).concat([1]));
     
     var okHtml = '<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;font-size:14px;font-weight:700;color:#c0b8ff;"><button class="planlanan-ok-btn" onclick="ayDegistirRapor(-1, \'harcamalar\')">⬅</button><span>📅 '+AY[m]+' '+y+'</span><button class="planlanan-ok-btn" onclick="ayDegistirRapor(1, \'harcamalar\')">➡</button></div>';
     var html=okHtml;
     
-if(Object.keys(anaTopH).length){html+='<div class="rapor-toplam-satir"><span style="font-size:13px;font-weight:700;color:#aaa">Toplam Harcama</span><span style="font-size:15px;font-weight:700;color:#f76a6a">'+fmt(topH)+'</span></div>';Object.keys(anaTopH).sort(function(a,b){return anaTopH[b]-anaTopH[a];}).forEach(function(katId){var lim=limler[katId]||0;var pct=lim>0?Math.min((anaTopH[katId]/lim)*100,100):(anaTopH[katId]/maxH*100);var renk=katRenk(katId);html+='<div class="ozet-card"><div class="ozet-top"><div class="ozet-cat" style="color:'+renk+'">'+katAd(katId)+'</div><div style="display:flex;align-items:center;gap:6px"><div class="ozet-tutar" style="color:'+renk+'">'+fmt(anaTopH[katId])+'</div><button onclick="acKatDetay(\''+katId+'\',\''+ay+'\')" style="background:#1e2a3f;border:1px solid #3a4a6a;border-radius:6px;color:#7c6af7;font-size:10px;font-weight:700;padding:2px 6px;cursor:pointer">Detay</button></div></div><div class="ozet-bar-bg"><div class="ozet-bar-fill" style="width:'+pct+'%"></div></div>';if(lim>0)html+='<div class="ozet-limit-txt">'+fmt(anaTopH[katId])+' / '+fmt(lim)+'</div>';html+='</div>';});}
-    if(Object.keys(anaTopO).length){if(Object.keys(anaTopH).length)html+='<div style="height:1px;background:#2a2a4a;margin:16px 0 12px;"></div>';html+='<div class="rapor-toplam-satir" style="border-color:#f7a06a"><span style="font-size:13px;font-weight:700;color:#aaa">Toplam Ödeme</span><span style="font-size:15px;font-weight:700;color:#f7a06a">'+fmt(topO)+'</span></div>';Object.keys(anaTopO).sort(function(a,b){return anaTopO[b]-anaTopO[a];}).forEach(function(katId){html+='<div class="ozet-card"><div class="ozet-top"><div class="ozet-cat" style="color:#f7a06a">💳 '+katAd(katId)+'</div><div style="display:flex;align-items:center;gap:6px"><div class="ozet-tutar" style="color:#f7a06a">'+fmt(anaTopO[katId])+'</div><button onclick="acKatDetay(\''+katId+'\',\''+ay+'\')" style="background:#1e2a3f;border:1px solid #3a4a6a;border-radius:6px;color:#7c6af7;font-size:10px;font-weight:700;padding:2px 6px;cursor:pointer">Detay</button></div></div></div>';});}
+if(Object.keys(anaTopH).length){html+='<div class="rapor-toplam-satir" style="flex-direction:column;justify-content:center;padding:12px;"><span style="font-size:13px;font-weight:700;color:#aaa;margin-bottom:4px;">Toplam Harcama</span><span style="font-size:22px;font-weight:700;color:#f76a6a">'+fmt(topH)+'</span></div>';Object.keys(anaTopH).sort(function(a,b){return anaTopH[b]-anaTopH[a];}).forEach(function(katId){var renk=katRenk(katId);html+='<div class="ozet-card"><div class="ozet-top"><div class="ozet-cat" style="color:'+renk+'">'+katAd(katId)+'</div><div style="display:flex;align-items:center;gap:6px"><div class="ozet-tutar" style="color:'+renk+'">'+fmt(anaTopH[katId])+'</div><button onclick="acKatDetay(\''+katId+'\',\''+ay+'\')" style="background:#1e2a3f;border:1px solid #3a4a6a;border-radius:6px;color:#7c6af7;font-size:10px;font-weight:700;padding:2px 6px;cursor:pointer">Detay</button></div></div></div>';});}
+    if(Object.keys(anaTopO).length){if(Object.keys(anaTopH).length)html+='<div style="height:1px;background:#2a2a4a;margin:16px 0 12px;"></div>';html+='<div class="rapor-toplam-satir" style="border-color:#f7a06a;flex-direction:column;justify-content:center;padding:12px;"><span style="font-size:13px;font-weight:700;color:#aaa;margin-bottom:4px;">Toplam Ödeme</span><span style="font-size:22px;font-weight:700;color:#f7a06a">'+fmt(topO)+'</span></div>';Object.keys(anaTopO).sort(function(a,b){return anaTopO[b]-anaTopO[a];}).forEach(function(katId){html+='<div class="ozet-card"><div class="ozet-top"><div class="ozet-cat" style="color:#f7a06a">💳 '+katAd(katId)+'</div><div style="display:flex;align-items:center;gap:6px"><div class="ozet-tutar" style="color:#f7a06a">'+fmt(anaTopO[katId])+'</div><button onclick="acKatDetay(\''+katId+'\',\''+ay+'\')" style="background:#1e2a3f;border:1px solid #3a4a6a;border-radius:6px;color:#7c6af7;font-size:10px;font-weight:700;padding:2px 6px;cursor:pointer">Detay</button></div></div></div>';});}
     
     if(!Object.keys(anaTopH).length && !Object.keys(anaTopO).length) {
         html += '<div class="empty-msg">Bu ay kayıt bulunamadı.</div>';
@@ -1728,7 +1727,7 @@ borclar.forEach(function(v){var faiz=cariGFaiz(v);var fo=(v.kendiFaizOrani!==und
     var okHtml = '<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;font-size:14px;font-weight:700;color:#c0b8ff;"><button class="planlanan-ok-btn" onclick="ayDegistirRapor(-1, \'planlanan\')">⬅</button><span>📅 '+AY[m]+' '+y+'</span><button class="planlanan-ok-btn" onclick="ayDegistirRapor(1, \'planlanan\')">➡</button></div>';
     var html = okHtml;
 
-    html+='<div style="background:#2a2a4a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:center;border:1px solid #3a3a6a;"><div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">Kalan ÇIKIŞLAR / TOPLAM AYLIK ÇIKIŞ</div><div style="font-size:22px;font-weight:700;color:#f76a6a;">'+fmt(genelT_kalan)+' / '+fmt(genelT_toplam)+'</div></div>';
+    html+='<div style="background:#2a2a4a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:center;border:1px solid #3a3a6a;"><div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">AYLIK NAKİT ÇIKIŞ</div><div style="font-size:22px;font-weight:700;color:#f76a6a;">'+fmt(genelT_toplam)+'</div></div>';
 
     var col1Html='',col2Html='',col3Html='';
 
