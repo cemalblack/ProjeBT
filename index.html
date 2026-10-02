@@ -1576,15 +1576,23 @@ function renderSorguIcerik(bolum){
   var formatHtml = function(d) {
       var od = d.odenen !== undefined ? d.odenen : 0;
       var t = (d.kalan !== undefined) ? d.kalan : d.toplam;
-      if (d.odendi || od > 0) { 
-          if (d.tutarTipi === 'degisken' || d.toplam === 0) {
-              return '<span style="color:#6af7a0;font-weight:700;">✓ (' + fmt(od) + ')</span>';
-          } else {
-              return '<span style="color:#6af7a0;font-weight:700;">✓ (' + fmt(od) + ')</span> <span style="color:#888;font-size:11px;margin:0 2px;">/</span> <span style="color:#f7a06a;font-size:11px">' + fmt(d.toplam) + '</span>';
+      if(d.isKart) {
+          if (d.odendi || od > 0) { 
+              return '<span style="color:#888;font-weight:700;">✓ (' + fmt(od) + ')</span>';
+          } else { 
+              return '<span style="color:#888;font-weight:700;">' + fmt(d.toplam) + '</span>';
           }
-      } else { 
-          if(d.tutarTipi === 'degisken') return '<span style="color:#f7b96a;font-weight:700;">Değişken</span>';
-          return '<span style="color:#f7a06a;font-weight:700;">' + fmt(d.toplam) + '</span>';
+      } else {
+          if (d.odendi || od > 0) { 
+              if (d.tutarTipi === 'degisken' || d.toplam === 0) {
+                  return '<span style="color:#6af7a0;font-weight:700;">✓ (' + fmt(od) + ')</span>';
+              } else {
+                  return '<span style="color:#6af7a0;font-weight:700;">✓ (' + fmt(od) + ')</span> <span style="color:#888;font-size:11px;margin:0 2px;">/</span> <span style="color:#f7a06a;font-size:11px">' + fmt(d.toplam) + '</span>';
+              }
+          } else { 
+              if(d.tutarTipi === 'degisken') return '<span style="color:#f7b96a;font-weight:700;">Değişken</span>';
+              return '<span style="color:#f7a06a;font-weight:700;">' + fmt(d.toplam) + '</span>';
+          }
       }
   };
 
@@ -1706,11 +1714,25 @@ borclar.forEach(function(v){var faiz=cariGFaiz(v);var fo=(v.kendiFaizOrani!==und
       var kalanTutar=Math.max(0,planlananTutar-odenenTutar);
       if(od)kalanTutar=0;
       var isOdendi=(t.tutarTipi==='sabit'&&planlananTutar>0&&odenenTutar>=planlananTutar)||od;
-      var item={yazi:dY, toplam:planlananTutar, odenen:odenenTutar, kalan:kalanTutar, odendi:isOdendi, tutarTipi:t.tutarTipi};
+      
+      var isKart = false;
+      if(t.katTip==='odeme' && t.borcHesapId) {
+          var hv = varliklar.find(function(x){return x.id===t.borcHesapId;});
+          if(hv && hv.tip==='borc' && hv.borcTuru==='kart') isKart = true;
+      }
+
+      if(isKart) {
+          dY += ' <span style="color:#888;font-size:10px">(Sonraki Aya)</span>';
+      }
+
+      var item={yazi:dY, toplam:planlananTutar, odenen:odenenTutar, kalan:kalanTutar, odendi:isOdendi, tutarTipi:t.tutarTipi, isKart:isKart};
+      
       if(t.katTip==='odeme'){
-         tekO.push(item); toT_kalan+=kalanTutar; toT_toplam+=planlananTutar;
+         tekO.push(item);
+         if(!isKart) { toT_kalan+=kalanTutar; toT_toplam+=planlananTutar; }
       }else{
-         tekH.push(item); thT_kalan+=kalanTutar; thT_toplam+=planlananTutar;
+         tekH.push(item);
+         if(!isKart) { thT_kalan+=kalanTutar; thT_toplam+=planlananTutar; }
       }
     });
 
@@ -1747,11 +1769,12 @@ borclar.forEach(function(v){var faiz=cariGFaiz(v);var fo=(v.kendiFaizOrani!==und
       var bSuffix=b.taksit?' ('+b.taksit.no+'/'+b.taksit.toplam+')':'';
       var tKalan=obj.odendi?0:b.tutar; var tToplam=b.tutar; var odenen=obj.odendi?b.tutar:0;
       if(hv&&hv.tip==='borc'&&hv.borcTuru==='kart'){
-        taksitD.push({yazi:'💳 '+hv.ad+' Taksit ('+bAd+')'+bSuffix, toplam:tToplam, odenen:odenen, kalan:tKalan, odendi:obj.odendi});
+        bSuffix += ' <span style="color:#888;font-size:10px">(Sonraki Aya)</span>';
+        taksitD.push({yazi:'💳 '+hv.ad+' Taksit ('+bAd+')'+bSuffix, toplam:tToplam, odenen:odenen, kalan:tKalan, odendi:obj.odendi, isKart:true});
       }else{
-        taksitD.push({yazi:bAd+bSuffix, toplam:tToplam, odenen:odenen, kalan:tKalan, odendi:obj.odendi});
+        taksitD.push({yazi:bAd+bSuffix, toplam:tToplam, odenen:odenen, kalan:tKalan, odendi:obj.odendi, isKart:false});
+        taksitT_kalan+=tKalan; taksitT_toplam+=tToplam;
       }
-      taksitT_kalan+=tKalan; taksitT_toplam+=tToplam;
     });
 
     var genelT_kalan=kT_kalan+toT_kalan+bT_kalan+thT_kalan+taksitT_kalan;
@@ -1814,6 +1837,7 @@ borclar.forEach(function(v){var faiz=cariGFaiz(v);var fo=(v.kendiFaizOrani!==und
 function renderSorgu(){window.raporAyStr=null;if(aktifRaporBolum)renderSorguIcerik(aktifRaporBolum);}
 
 /* 2. BÖLÜM BURADA BİTİYOR (DEVAM YAZDIĞINIZDA 3. BÖLÜM BURADAN EKLENECEK)   */
+
 function acKatDetay(katId,ay){var harcamalar=gd('harcamalar',[]).filter(function(h){return h.kat===katId&&h.ay===ay;});document.getElementById('pop-kat-detay-title').textContent=katAd(katId)+' - Detay';var ic=document.getElementById('pop-kat-detay-icerik');ic.innerHTML='';if(!harcamalar.length){ic.innerHTML='<div class="detay-bos">Kayıt yok</div>';}else{harcamalar.forEach(function(h){var d=new Date(h.tarih);var ts=d.toLocaleDateString('tr-TR')+' '+d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});var wrap=document.createElement('div');wrap.className='detay-kayit';var ust=document.createElement('div');ust.className='detay-kayit-ust';var sol=document.createElement('div');sol.className='detay-kayit-sol';sol.innerHTML='<div class="detay-kayit-metin"><b style="color:#c0b8ff">'+(h.altKat?h.altKat:katAd(katId))+'</b>: '+fmt(h.tutar)+(h.not?' — '+h.not:'')+(h.taksit?' (Taksit '+h.taksit.no+'/'+h.taksit.toplam+')':'')+'</div><div class="detay-kayit-tarih">'+ts+'</div>';var sb=document.createElement('button');sb.className='detay-kayit-sil';sb.textContent='X';sb.addEventListener('click',(function(id){return function(){document.getElementById('pop-kat-detay').classList.remove('show');silHarcama(id);};})(h.id));ust.appendChild(sol);ust.appendChild(sb);wrap.appendChild(ust);ic.appendChild(wrap);});}document.getElementById('pop-kat-detay').classList.add('show');}
 document.getElementById('pop-kat-detay-kapat').addEventListener('click',function(){document.getElementById('pop-kat-detay').classList.remove('show');});
 function sifirla(){acOnay('Tüm Veriler Silinecek','Tüm verileriniz kalıcı olarak silinecek.',function(){_cache={};try{localStorage.clear();}catch(e){}renderGiris();renderVarlik();showPage('giris');});}
