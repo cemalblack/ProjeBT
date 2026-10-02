@@ -1053,16 +1053,17 @@ function renderGiris(){
     var kalanTutar = Math.max(0, planlananTutar - odenenTutar);
     if(od) kalanTutar = 0;
     
+    var isKart = false;
+    if (t.borcHesapId) {
+      var hv = varliklar.find(function(x){return x.id === t.borcHesapId;});
+      if (hv && hv.tip === 'borc' && hv.borcTuru === 'kart') isKart = true;
+    }
+
     if(!od && !(t.tutarTipi==='sabit' && planlananTutar > 0 && odenenTutar >= planlananTutar)){
-       genelT_kalan_full += kalanTutar;
+       if (!isKart) genelT_kalan_full += kalanTutar;
     }
     
     if(t.tutarTipi==='sabit'&&t.tutar) {
-      var isKart = false;
-      if (t.borcHesapId) {
-        var hv = varliklar.find(function(x){return x.id === t.borcHesapId;});
-        if (hv && hv.tip === 'borc' && hv.borcTuru === 'kart') isKart = true;
-      }
       if (!isKart) tekT_kalan += kalanTutar;
     }
   });
@@ -1070,13 +1071,15 @@ function renderGiris(){
   // 3. Nakdi Taksitler
   var nakdiTaksit_kalan=0;
   gd('bekleyen_taksitler',[]).filter(function(b){return (b.ay||b.tarih.slice(0,7))===ayStr;}).forEach(function(b){
-    genelT_kalan_full += b.tutar;
     var isKart=false;
     if(b.hesapId){
       var hv=varliklar.find(function(x){return x.id===b.hesapId;});
       if(hv&&hv.tip==='borc'&&hv.borcTuru==='kart') isKart=true;
     }
-    if(!isKart) nakdiTaksit_kalan+=b.tutar;
+    if(!isKart) {
+       nakdiTaksit_kalan+=b.tutar;
+       genelT_kalan_full += b.tutar;
+    }
   });
 
   // 4. Normal Borçlar
