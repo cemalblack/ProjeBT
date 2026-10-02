@@ -1494,11 +1494,12 @@ function tekrarlayanKontrol(){
           if(!tutar||tutar<=0){alert('Tutar girin.');return;}
           
           var h2=gd('harcamalar',[]);
-          h2.unshift({id:Date.now(),tutar:tutar,not:'Tekrarlayan'+(item.katTip==='odeme'?' Ödeme':''),kat:item.katId,altKat:item.altKat||null,tarih:new Date().toISOString(),ay:buAy(),hesapId:item.borcHesapId||null,isOdeme:item.katTip==='odeme'});
+          var hId = Date.now();
+          h2.unshift({id:hId,tutar:tutar,not:'Tekrarlayan'+(item.katTip==='odeme'?' Ödeme':''),kat:item.katId,altKat:item.altKat||null,tarih:new Date().toISOString(),ay:buAy(),hesapId:item.borcHesapId||null,isOdeme:item.katTip==='odeme'});
           sd('harcamalar',h2);
           
           if(item.katTip==='odeme'&&item.borcHesapId) {
-             odemeHesabaIsle(item.borcHesapId,tutar,'Tekrarlayan Ödeme');
+             odemeHesabaIsle(item.borcHesapId,tutar,'Tekrarlayan Ödeme', hId);
           }
           
           var lst=getTekrarlar();
@@ -1839,6 +1840,7 @@ borclar.forEach(function(v){var faiz=cariGFaiz(v);var fo=(v.kendiFaizOrani!==und
 
 function renderSorgu(){window.raporAyStr=null;if(aktifRaporBolum)renderSorguIcerik(aktifRaporBolum);}
 
+/* 2. BÖLÜM BURADA BİTİYOR (DEVAM YAZDIĞINIZDA 3. BÖLÜM BURADAN EKLENECEK)   */
 /* 2. BÖLÜM BURADA BİTİYOR (DEVAM YAZDIĞINIZDA 3. BÖLÜM BURADAN EKLENECEK)   */
 
 function acKatDetay(katId,ay){var harcamalar=gd('harcamalar',[]).filter(function(h){return h.kat===katId&&h.ay===ay;});document.getElementById('pop-kat-detay-title').textContent=katAd(katId)+' - Detay';var ic=document.getElementById('pop-kat-detay-icerik');ic.innerHTML='';if(!harcamalar.length){ic.innerHTML='<div class="detay-bos">Kayıt yok</div>';}else{harcamalar.forEach(function(h){var d=new Date(h.tarih);var ts=d.toLocaleDateString('tr-TR')+' '+d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});var wrap=document.createElement('div');wrap.className='detay-kayit';var ust=document.createElement('div');ust.className='detay-kayit-ust';var sol=document.createElement('div');sol.className='detay-kayit-sol';sol.innerHTML='<div class="detay-kayit-metin"><b style="color:#c0b8ff">'+(h.altKat?h.altKat:katAd(katId))+'</b>: '+fmt(h.tutar)+(h.not?' — '+h.not:'')+(h.taksit?' (Taksit '+h.taksit.no+'/'+h.taksit.toplam+')':'')+'</div><div class="detay-kayit-tarih">'+ts+'</div>';var sb=document.createElement('button');sb.className='detay-kayit-sil';sb.textContent='X';sb.addEventListener('click',(function(id){return function(){document.getElementById('pop-kat-detay').classList.remove('show');silHarcama(id);};})(h.id));ust.appendChild(sol);ust.appendChild(sb);wrap.appendChild(ust);ic.appendChild(wrap);});}document.getElementById('pop-kat-detay').classList.add('show');}
